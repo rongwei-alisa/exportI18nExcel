@@ -1,0 +1,16 @@
+{
+  "name": "export",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "excel-export": "^0.5.1",
+    "koa": "^2.8.1",
+    "koa-router": "^7.4.0"
+  }
+}

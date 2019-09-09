@@ -1,0 +1,31 @@
+<!--
+ * @Description: file content
+ * @Author: RongWei
+ * @Date: 2019-09-08 23:46:58
+ * @LastEditors: RongWei
+ * @LastEditTime: 2019-09-08 23:55:12
+ -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Excel导出</title>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"
+        integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous">
+        </script>
+</head>
+
+<body>
+    <button id="exportexcel">导出Excel</button>
+
+    <script>
+        $(function () {
+            $("#exportexcel").on("click", function () {
+                window.open("/exportexcel")
+            });
+        })
+    </script>
+</body>
+
+</html>
