@@ -3,7 +3,7 @@
  * @Author: RongWei
  * @Date: 2019-09-09 09:27:10
  * @LastEditors: RongWei
- * @LastEditTime: 2019-09-09 09:31:59
+ * @LastEditTime: 2019-09-11 20:07:59
  -->
 # exportI18nExcel
 
@@ -15,5 +15,5 @@
 4. 运行 node app，在浏览器中打开 localhost:3000, 点击导出按钮，就可以导出 Excel 啦
 ```
 
-**暂时写的是将目标文件夹中的所有 jsx 文件遍历，找出其中的中文导出至 excel，如果要导出 js 文件中的中文，需要修改代码。**
+**暂时写的是将目标文件夹中的所有 jsx 文件遍历，找出其中的中文导出至 Excel，如果要导出 js 文件中的中文，需要修改代码。**    
 **因为 index.js 文件中会导入其他文件，所以 jsx 和 js 一起遍历时，有些文件会输出两边。**

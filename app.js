@@ -3,7 +3,7 @@
  * @Author: RongWei
  * @Date: 2019-09-08 23:47:47
  * @LastEditors: RongWei
- * @LastEditTime: 2019-09-09 09:18:51
+ * @LastEditTime: 2019-09-11 20:01:25
  */
 const Koa = require("koa");
 const router = require("koa-router")();
@@ -11,8 +11,11 @@ const fs = require("fs");
 const path = require('path');
 const readline = require('readline');
 const nodeExcel = require('excel-export');
+
 const app = new Koa();
-const filePath = path.resolve('../../maycur/maycur-form-web/src/components/');
+const filePath = path.resolve('../../maycur/maycur-form-web/src/components');
+const excelData = [];
+
 app.use(router.routes());
 
 router.get("/", (ctx) => {
@@ -21,68 +24,6 @@ router.get("/", (ctx) => {
 
 //导出Excel，xlsx格式
 router.get('/exportexcel', async (ctx) => {
-    // 读取文件
-    function fileDisplay() {
-        //根据文件路径读取文件，返回文件列表
-        return new Promise(resolve => {
-            fs.readdir(filePath, function (err, files) {
-                if (err) {
-                    console.warn(err)
-                } else {
-                    const excelData = [];
-                    //遍历读取到的文件列表
-                    files.forEach(function (filename) {
-                        //获取当前文件的绝对路径
-                        const filedir = path.join(filePath, filename);
-                        //根据文件路径获取文件信息，返回一个fs.Stats对象
-                        fs.stat(filedir, function (eror, stats) {
-                            if (eror) {
-                                console.warn('获取文件stats失败');
-                            } else {
-                                const isFile = stats.isFile();//是文件
-                                const isDir = stats.isDirectory();//是文件夹
-                                const extname = path.extname(filedir);
-                                const reg = new RegExp(/(.jsx)$/)
-                                if (isFile && reg.test(extname)) {
-                                    // 读取文件内容
-                                    const rl = readline.createInterface({
-                                        input: fs.createReadStream(filedir)
-                                    });
-                                    rl.on('line', (line) => {
-                                        // 排除注释
-                                        const annotationReg = new RegExp(/(?:^|\n|\r)\s*\/\/.*(?:\r|\n|$)/g);
-                                        if (!annotationReg.test(line)) {
-                                            const ch = (/[\u4e00-\u9fa5\uFF00-\uFFFF]+/g).exec(line);
-                                            if (ch) {
-                                                const pathArr = filedir.split('/');
-                                                const pathArrLength = pathArr.length
-                                                const fileName = pathArr[pathArrLength - 1].split('.')[0];
-                                                excelData.unshift({
-                                                    NameSpace: fileName,
-                                                    Key1: '',
-                                                    Key2: '',
-                                                    zh: ch[0],
-                                                    en: ''
-                                                })
-                                            }
-                                        }
-                                    });
-
-                                    rl.on('close', async () => {
-                                        resolve(excelData);
-                                    });
-                                }
-                                if (isDir) {
-                                    fileDisplay(filedir);//递归，如果是文件夹，就继续遍历该文件夹下面的文件
-                                }
-                            }
-                        })
-                    });
-                }
-            });
-        })
-    }
-
     //导出
     function exportdata(v) {
         let conf = {};
@@ -126,11 +67,68 @@ router.get('/exportexcel', async (ctx) => {
         ctx.body = data;
     }
 
-    return fileDisplay().then(data => {
-        exportdata(data);
-    })
+    await exportdata(excelData)
 });
 
+// 读取文件
+function iterateFile(filePath) {
+    //根据文件路径读取文件，返回文件列表
+    fs.readdir(filePath, function (err, files) {
+        if (err) {
+            console.warn(err)
+        } else {
+            //遍历读取到的文件列表
+            files.forEach(function (filename) {
+                //获取当前文件的绝对路径
+                const filedir = path.join(filePath, filename);
+                //根据文件路径获取文件信息，返回一个fs.Stats对象
+                fs.stat(filedir, async (eror, stats) => {
+                    if (eror) {
+                        console.warn('获取文件stats失败');
+                    } else {
+                        const isFile = stats.isFile();//是文件
+                        const isDir = stats.isDirectory();//是文件夹
+                        const extname = path.extname(filedir);
+                        const reg = new RegExp(/(.jsx)$/)
+                        if (isFile && reg.test(extname)) {
+                            // 读取文件内容
+                            const rl = readline.createInterface({
+                                input: fs.createReadStream(filedir)
+                            });
+                            rl.on('line', (line) => {
+                                // 排除注释
+                                const annotationReg = new RegExp(/(?:^|\n|\r)\s*\/\/.*(?:\r|\n|$)/g);
+                                if (!annotationReg.test(line)) {
+                                    const ch = (/[\u4e00-\u9fa5\uFF00-\uFFFF]+/g).exec(line);
+                                    if (ch) {
+                                        const pathArr = filedir.split('/');
+                                        const pathArrLength = pathArr.length
+                                        const fileName = pathArr[pathArrLength - 1].split('.')[0];
+                                        excelData.unshift({
+                                            NameSpace: fileName,
+                                            Key1: '',
+                                            Key2: '',
+                                            zh: ch[0],
+                                            en: ''
+                                        })
+                                    }
+                                }
+                            });
 
+                            rl.on('close', () => {
+                                console.log('finish', filedir)
+                            });
+                        }
+                        if (isDir) {
+                            iterateFile(filedir);//递归，如果是文件夹，就继续遍历该文件夹下面的文件
+                        }
+                    }
+                })
+            });
+        }
+    });
+}
+
+iterateFile(filePath);
 
 app.listen(3000);
